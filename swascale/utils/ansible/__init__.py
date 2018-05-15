@@ -15,13 +15,12 @@ class Ansible:
 
     @staticmethod
     def getInstance():
-        if Ansible.__instance == None:
+        if Ansible.__instance is None:
             Ansible()
         return Ansible.__instance
 
     def __init__(self):
-         """ Virtually private constructor. """
-        if Singleton.__instance != None:
+        if Singleton.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             ansible_cfg = cfg['ansible']
@@ -41,7 +40,8 @@ class Ansible:
                 loader=self.loader,
                 sources=','.join(ips)
                 )
-        self.variable_manager = VariableManager(loader=self.loader, inventory=self.inventory)
+        self.variable_manager = VariableManager(
+            loader=self.loader, inventory=self.inventory)
         self.passwords = {'become_pass': ansible_cfg['BECOME_PASS']}
         self.options.hostlist = ips
         os.environ['ANSIBLE_CONFIG'] = cfg.ansible['ANSIBLE_CONFIG']

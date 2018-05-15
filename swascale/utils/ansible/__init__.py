@@ -20,18 +20,20 @@ class Ansible:
         return Ansible.__instance
 
     def __init__(self):
-
-        ansible_cfg = cfg['ansible']
-
-        self.loader = DataLoader()
-        self.passwords = {}
-        self.options = Options()
-        self.options.become_method = ansible_cfg['BECOME_METHOD']
-        self.options.become_user = ansible_cfg['BECOME_USER']
-        self.options.become = True
-        self.options.private_key_file = ansible_cfg['PRIVATE_SSH_KEY']
-        self.options.connection = ansible_cfg['CONNECTION']
-        self.options.forks = 1
+         """ Virtually private constructor. """
+        if Singleton.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            ansible_cfg = cfg['ansible']
+            self.loader = DataLoader()
+            self.passwords = {}
+            self.options = Options()
+            self.options.become_method = ansible_cfg['BECOME_METHOD']
+            self.options.become_user = ansible_cfg['BECOME_USER']
+            self.options.become = True
+            self.options.private_key_file = ansible_cfg['PRIVATE_SSH_KEY']
+            self.options.connection = ansible_cfg['CONNECTION']
+            self.options.forks = 1
 
     def execute_playbook(self, playbook, ips):
         ips.append('')

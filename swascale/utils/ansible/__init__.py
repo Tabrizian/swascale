@@ -20,7 +20,7 @@ class Ansible:
         return Ansible.__instance
 
     def __init__(self):
-        if Singleton.__instance is not None:
+        if Ansible.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             ansible_cfg = cfg['ansible']

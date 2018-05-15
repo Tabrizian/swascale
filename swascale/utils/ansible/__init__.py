@@ -36,6 +36,7 @@ class Ansible:
             self.options.forks = 1
 
     def execute_playbook(self, playbook, ips):
+        ansible_cfg = cfg['ansible']
         ips.append('')
         self.inventory = InventoryManager(
                 loader=self.loader,

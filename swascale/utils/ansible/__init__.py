@@ -19,7 +19,7 @@ class Ansible:
             Ansible()
         return Ansible.__instance
 
-    def __init__():
+    def __init__(self):
 
         ansible_cfg = cfg['ansible']
 

@@ -1,0 +1,33 @@
+---
+- hosts: all
+  tasks:
+    - name: Download prometheus
+      unarchive:
+        src: https://github.com/prometheus/node_exporter/releases/download/v0.14.0/node_exporter-0.14.0.linux-amd64.tar.gz
+        dest: /tmp/
+        remote_src: True
+
+    - name: Create symlink
+      file:
+        src: /tmp/node_exporter-0.14.0.linux-amd64/node_exporter
+        dest: /usr/bin/node_exporter
+        state: link
+
+    - name: Make it a service
+      copy:
+        content: |
+          [Unit]
+          Description=Prometheus node exporter
+          After=local-fs.target network-online.target network.target
+          Wants=local-fs.target network-online.target network.target
+          [Service]
+          ExecStart=/usr/bin/node_exporter -web.listen-address ":6634"
+          Type=simple
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/node_exporter.service
+
+    - name: Start node exporter
+      service:
+        name: node_exporter
+        state: started

@@ -1,0 +1,60 @@
+---
+- hosts: all
+  tasks:
+    - name: Install prerequisites
+      apt: name={{item}} state=installed update_cache=yes
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+    - name: Add docker gpg
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add docker repository
+      apt_repository:
+        repo:  deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+        state: present
+
+
+    - name: Update dependencies and install docker
+      action: >
+        {{ ansible_pkg_mgr }} name={{ item }} state=present update_cache=yes
+      with_items:
+        - docker-ce
+      register: result
+      until: result|succeeded
+      retries: 10
+      delay: 30
+      ignore_errors: yes
+    - name: Install python
+      apt: name={{item}} state=installed update_cache=yes
+      with_items:
+        - python
+        - python-pip
+
+    - name: Install docker-py
+      pip:
+        name: docker-py
+
+    - name: Make docker API accessible remotely
+      lineinfile:
+        path: /lib/systemd/system/docker.service
+        regexp: '^ExecStart(.*)$'
+        line: 'ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:8000'
+
+    - name: Configure docker to be used with prometheus
+      copy:
+        content: |
+          {
+            "metrics-addr" : "0.0.0.0:8774",
+            "experimental" : true
+          }
+        dest: /etc/docker/daemon.json
+
+    - systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker

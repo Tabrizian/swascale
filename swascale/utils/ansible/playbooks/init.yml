@@ -1,0 +1,26 @@
+---
+  - hosts: all
+    gather_facts: no
+    tasks:
+      - name: Wait for server to start
+
+        local_action:
+          module: wait_for
+            host={{ inventory_hostname }}
+            port=22
+            timeout=300
+      - name: Fix installation of missing dependencies
+        command: apt-get install -f -y
+
+      - name: Wait for lock file
+        shell: while [[ $(sudo fuser /var/lib/dpkg/lock) ]]; do :; done
+      - name: Update repositories cache
+        apt:
+          update_cache: yes
+        register: result
+        until: result|succeeded
+        ignore_errors: yes
+      - name: Wait for lock file
+        shell: while [[ $(sudo fuser /var/lib/dpkg/lock) ]]; do :; done
+  - import_playbook: docker.yml
+  - import_playbook: prometheus.yml

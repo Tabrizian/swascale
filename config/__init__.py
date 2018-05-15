@@ -5,7 +5,7 @@ class Config:
 
     def __init__(self):
         self.parser = configparser.ConfigParser()
-        self.parser.read('config/genorch.ini')
+        self.parser.read('config/swascale.ini')
 
     def __getattr__(self, name):
         return self.parser[name]

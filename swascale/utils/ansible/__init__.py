@@ -23,6 +23,7 @@ class Ansible:
         if Ansible.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
+            Ansible.__instance = self
             ansible_cfg = cfg['ansible']
             self.loader = DataLoader()
             self.passwords = {}

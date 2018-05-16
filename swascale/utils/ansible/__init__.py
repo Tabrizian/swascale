@@ -35,7 +35,7 @@ class Ansible:
             self.options.connection = ansible_cfg['CONNECTION']
             self.options.forks = 1
 
-    def execute_playbook(self, playbook, ips):
+    def execute_playbook(self, ips):
         ansible_cfg = cfg['ansible']
         ips.append('')
         self.inventory = InventoryManager(
@@ -50,7 +50,7 @@ class Ansible:
         self.options.extra_vars = None
         self.variable_manager.extra_vars = {}
         pbex = PlaybookExecutor(
-                playbooks=['swascale/utils/ansible/playbooks/' + playbook],
+                playbooks=['swascale/utils/ansible/playbooks/init.yml'],
                 inventory=self.inventory,
                 variable_manager=self.variable_manager,
                 loader=self.loader,

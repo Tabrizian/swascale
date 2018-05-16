@@ -50,7 +50,7 @@ class Ansible:
         self.options.extra_vars = None
         self.variable_manager.extra_vars = {}
         pbex = PlaybookExecutor(
-                playbooks=['playbooks/' + playbook],
+                playbooks=['swascale/utils/ansible/playbooks/' + playbook],
                 inventory=self.inventory,
                 variable_manager=self.variable_manager,
                 loader=self.loader,

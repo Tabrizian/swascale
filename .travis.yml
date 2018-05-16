@@ -13,5 +13,4 @@ before_install:
 install:
   - pipenv install
 
- script:
-  - pytest
+script: pytest

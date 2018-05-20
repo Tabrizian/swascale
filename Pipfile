@@ -9,8 +9,9 @@ name = "pypi"
 ansible = "*"
 python-openstackclient = "*"
 click = "*"
-pymongo = "*"
 python-neutronclient = "*"
+flask = "*"
+pymodm = "*"
 
 [requires]
 python_version = "3.6"

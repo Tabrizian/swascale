@@ -3,7 +3,7 @@ import importlib
 
 
 class BaseDriver(abc.ABCMeta):
-    providers = {}
+    drivers = {}
 
     def __new__(cls, name, bases, namespace):
         instance = abc.ABCMeta.__new__(cls, name, bases, namespace)
@@ -17,7 +17,7 @@ class BaseDriver(abc.ABCMeta):
     def get(cls, name):
         if name not in cls.drivers:
             try:
-                importlib.import_module('drivers.%s' % name)
+                importlib.import_module('swascale.drivers.%s' % name)
             except ImportError as e:
                 print(e)
         return cls.drivers[name]

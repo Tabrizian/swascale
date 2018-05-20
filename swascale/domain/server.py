@@ -1,14 +1,15 @@
-from domain.service import Service
-from providers.base import BaseProvider
-from database import db
-from utils import common
+from ..drivers.base import BaseDriver
 
 from os import system
+from swascale.utils.ansible import Ansible
 import click
 
 
 class Server:
-    def __init__(self, name, image, flavor, region, provider, networks, key=None):
+    def __init__(
+            self, name, image, flavor, region, driver, networks,
+            key=None
+            ):
         self._id = None
         self.name = name
         self.flavor = flavor
@@ -16,10 +17,11 @@ class Server:
         self.image = image
         self.networks = networks
         self.key = key
-        self.provider = BaseProvider.get(provider)(region)
+        self.driver = BaseDriver.get(driver)(region)
 
     @staticmethod
     def truncate():
+        """
         vms = db.vms.all()
         for vm in vms:
             provider = BaseProvider.get(vm['provider'])(vm['region'])
@@ -32,14 +34,16 @@ class Server:
             for ip in ips:
                 system("ssh-keygen -f ~/.ssh/known_hosts -R " + ip)
             db.vms.remove(eids=[vm.eid])
+        """
+        pass
 
     def create(self):
-        self._id = self.provider.create_server(
+        self._id = self.driver.create_server(
             self.image, self.flavor, self.name, self.networks, self.key)
 
-        while self.ips == {}: pass
+        while self.ips == {}:
+            pass
 
-        # Store the created VM inside database
         vm_data = {
             "_id": self._id,
             "name": self.name,
@@ -48,7 +52,7 @@ class Server:
             "image": self.image,
             "networks": self.networks,
             "ips": self.ips,
-            "provider": self.provider.name
+            "driver": self.driver.name
             }
 
         """
@@ -56,15 +60,13 @@ class Server:
         """
         if self.key is not None:
             vm_data['key'] = self.key
-
-        db.vms.insert(vm_data)
-
-        init = Service("ansible", [self.name], {"playbook": "init.yml"})
-        init.create()
+        Ansible.getInstance().execute_playbook(
+            [self.ips[self.networks[0]][0]['addr']]
+            )
 
     def delete(self):
-        self.provider.delete_server(self._id)
+        self.driver.delete_server(self._id)
 
     @property
     def ips(self):
-        return self.provider.ips(self._id)
+        return self.driver.ips(self._id)

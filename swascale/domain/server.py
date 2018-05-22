@@ -1,8 +1,9 @@
 from ..drivers.base import BaseDriver
-
-from os import system
 from swascale.utils.ansible import Ansible
+import swascale.model.server as ServerModel
+
 import click
+from os import system
 
 
 class Server:
@@ -21,21 +22,16 @@ class Server:
 
     @staticmethod
     def truncate():
-        """
-        vms = db.vms.all()
-        for vm in vms:
-            provider = BaseProvider.get(vm['provider'])(vm['region'])
-            provider.delete_server(vm['_id'])
-            click.secho('server => provider: %s, id: %s' %
-                    (vm['provider'], vm['name']),
-                    fg="red")
-            ips = []
-            ips.extend(common.translate_id(vm['name']))
-            for ip in ips:
-                system("ssh-keygen -f ~/.ssh/known_hosts -R " + ip)
-            db.vms.remove(eids=[vm.eid])
-        """
-        pass
+        servers = ServerModel.Server.objects.all()
+        print(servers)
+
+        for server in servers:
+            driver = BaseDriver.get(server['driver'])(server['region'])
+            driver.delete_server(server['_id'])
+            click.secho('server => driver: %s, id: %s' %
+                        (server['driver'], server['name']),
+                        fg="red")
+            server.delete()
 
     def create(self):
         self._id = self.driver.create_server(
@@ -54,7 +50,6 @@ class Server:
             "ips": self.ips,
             "driver": self.driver.name
             }
-
         """
         Whether it has key pair or not
         """
@@ -63,6 +58,15 @@ class Server:
         Ansible.getInstance().execute_playbook(
             [self.ips[self.networks[0]][0]['addr']]
             )
+        server = ServerModel.Server(
+            uid=self._id, name=self.name, image=self.image,
+            flavor=self.flavor, networks=self.networks, region=self.region,
+            driver=self.driver.name
+            )
+        try:
+            server.save()
+        except ValidationError as e:
+            print(e)
 
     def delete(self):
         self.driver.delete_server(self._id)

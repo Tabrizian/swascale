@@ -1,6 +1,6 @@
 from flask import Flask
 
-from .server import server
+from swascale.controllers.server import server
 
 app = Flask(__name__)
-app.register_blueprint(server)
+app.register_blueprint(server, url_prefix='/server')

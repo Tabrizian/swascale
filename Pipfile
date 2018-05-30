@@ -10,7 +10,6 @@ ansible = "*"
 python-openstackclient = "*"
 click = "*"
 python-neutronclient = "*"
-pymodm = "*"
 flask = "*"
 
 [requires]

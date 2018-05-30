@@ -1,6 +1,7 @@
 from ..drivers.base import BaseDriver
 from swascale.utils.ansible import Ansible
-import swascale.model.server as ServerModel
+from . import db
+from bson.objectid import ObjectId
 
 import click
 from os import system
@@ -22,8 +23,7 @@ class Server:
 
     @staticmethod
     def truncate():
-        servers = ServerModel.Server.objects.all()
-        print(servers)
+        servers = db.servers.find()
 
         for server in servers:
             driver = BaseDriver.get(server['driver'])(server['region'])
@@ -57,19 +57,23 @@ class Server:
             vm_data['key'] = self.key
         Ansible.getInstance().execute_playbook(
             [self.ips[self.networks[0]][0]['addr']]
-            )
-        server = ServerModel.Server(
-            uid=self._id, name=self.name, image=self.image,
-            flavor=self.flavor, networks=self.networks, region=self.region,
-            driver=self.driver.name
-            )
-        try:
-            server.save()
-        except ValidationError as e:
-            print(e)
+        )
+        db.servers.insert_one({
+            'uid': self._id,
+            'name': self.name,
+            'image': self.image,
+            'flavor': self.flavor,
+            'networks': self.networks,
+            'region': self.region,
+            'driver': self.driver.name
+        })
 
-    def delete(self):
-        self.driver.delete_server(self._id)
+    @staticmethod
+    def delete(uid):
+            servers = db.servers.find({'_id': ObjectId(uid)})
+            # driver = BaseDriver.get(servers[0]['driver'])(servers[0]['region'])
+            # driver.delete_server(servers[0]['uid'])
+            db.servers.remove({'_id': ObjectId(uid)})
 
     @property
     def ips(self):

@@ -1,10 +1,9 @@
 from flask import Blueprint, request, Response
 import json
 from bson.json_util import dumps
+from swascale.domain import db
 
-import swascale.model.server as ServerModel
 from swascale.domain.server import Server
-
 
 server = Blueprint('server', 'server')
 
@@ -12,7 +11,7 @@ server = Blueprint('server', 'server')
 @server.route('', methods=['GET'])
 def index():
     response = Response(
-        dumps(ServerModel.Server.objects.values().all()),
+        dumps(db.servers.find()),
         status=200,
         mimetype='application/json'
         )
@@ -21,7 +20,6 @@ def index():
 
 @server.route('', methods=['POST'])
 def create():
-    print(request.json['region'])
     server = Server(
         name=request.json['name'],
         image=request.json['image'],
@@ -33,3 +31,9 @@ def create():
         )
     server.create()
     return 'created'
+
+
+@server.route('<uid>', methods=['DELETE'])
+def delete(uid):
+    Server.delete(uid)
+    return 'deleted'

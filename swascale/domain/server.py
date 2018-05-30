@@ -71,8 +71,8 @@ class Server:
     @staticmethod
     def delete(uid):
             servers = db.servers.find({'_id': ObjectId(uid)})
-            # driver = BaseDriver.get(servers[0]['driver'])(servers[0]['region'])
-            # driver.delete_server(servers[0]['uid'])
+            driver = BaseDriver.get(servers[0]['driver'])(servers[0]['region'])
+            driver.delete_server(servers[0]['uid'])
             db.servers.remove({'_id': ObjectId(uid)})
 
     @property

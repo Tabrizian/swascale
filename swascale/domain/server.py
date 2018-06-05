@@ -3,6 +3,7 @@ from swascale.utils.ansible import Ansible
 from . import db
 from bson.objectid import ObjectId
 import docker
+from config import cfg
 
 import click
 from os import system
@@ -82,7 +83,7 @@ class Server:
             'region': self.region,
             'driver': self.driver.name
         })
-        self.uid = server._id
+        self.uid = server.inserted_id
 
     @staticmethod
     def delete(uid):
@@ -97,13 +98,40 @@ class Server:
 
     def swarm_init(self):
         swarm_client = docker.DockerClient(
-            'tcp://' +
-            self.ips[self.networks[0]][0] +
+            'tcp://' + self.ips[self.networks[0]][0]['addr'] +
             ':' + cfg.docker['API_PORT']
         ).swarm
 
-        swarm_client.init('eth0:' + cfg.docker['SWARM_PORT'],
-                          '0.0.0.0:' + cfg.docker['SWARM_PORT'])
-        print(swarm_client.attrs['JoinTokens'])
-        db.servers.update_one({_id: ObjectId(self.uid)},
-                              swarm_client.attrs['JoinTokens'])
+        # swarm_client.init('eth0:' + cfg.docker['SWARM_PORT'],
+        #                   '0.0.0.0:' + cfg.docker['SWARM_PORT'])
+        db.servers.update_one({'_id': ObjectId(self.uid)},
+                              {'$set':
+                               {'join_tokens':
+                                   swarm_client.attrs['JoinTokens']}
+                               })
+
+    def swarm_join_worker(self, manager):
+        managerFromDB = db.servers.find_one({'_id': ObjectId(manager.uid)})
+        swarm_client = docker.DockerClient(
+            'tcp://' + self.ips[self.networks[0]][0]['addr'] +
+            ':' + cfg.docker['API_PORT']
+        ).swarm
+        swarm_client.join(
+            [manager.ips[manager.networks[0]][0]['addr'] +
+                ':' + cfg.docker['SWARM_PORT']],
+            managerFromDB['join_tokens']['Worker'],
+            '0.0.0.0:' + cfg.docker['SWARM_PORT']
+        )
+
+    def swarm_join_manager(self, manager):
+        managerFromDB = db.servers.find_one({'_id': ObjectId(manager.uid)})
+        swarm_client = docker.DockerClient(
+            'tcp://' + self.ips[self.networks[0]][0]['addr'] +
+            ':' + cfg.docker['API_PORT']
+        ).swarm
+        swarm_client.join(
+            [manager.ips[manager.networks[0]][0]['addr'] +
+                ':' + cfg.docker['SWARM_PORT']],
+            managerFromDB['join_tokens']['Manager'],
+            '0.0.0.0:' + cfg.docker['SWARM_PORT']
+        )

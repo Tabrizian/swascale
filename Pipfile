@@ -11,6 +11,8 @@ python-openstackclient = "*"
 click = "*"
 python-neutronclient = "*"
 flask = "*"
+pymongo = "*"
+docker = "*"
 
 [requires]
 python_version = "3.6"

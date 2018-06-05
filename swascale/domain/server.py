@@ -102,8 +102,8 @@ class Server:
             ':' + cfg.docker['API_PORT']
         ).swarm
 
-        # swarm_client.init('eth0:' + cfg.docker['SWARM_PORT'],
-        #                   '0.0.0.0:' + cfg.docker['SWARM_PORT'])
+        swarm_client.init('eth0:' + cfg.docker['SWARM_PORT'],
+                          '0.0.0.0:' + cfg.docker['SWARM_PORT'])
         db.servers.update_one({'_id': ObjectId(self.uid)},
                               {'$set':
                                {'join_tokens':

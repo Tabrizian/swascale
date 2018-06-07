@@ -50,6 +50,7 @@ def create():
     with open('config/targets.json', 'r+') as outfile:
         try:
             prometheusTargets = json.load(outfile)
+            outfile.seek(0)
             prometheusTargets.append(
                 {'targets': targets, 'labels': {'cluster': str(cluster)}})
             json.dump(prometheusTargets, outfile)

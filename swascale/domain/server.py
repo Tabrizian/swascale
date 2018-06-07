@@ -43,11 +43,8 @@ class Server:
 
         for server in servers:
             driver = BaseDriver.get(server['driver'])(server['region'])
-            driver.delete_server(server['_id'])
-            click.secho('server => driver: %s, id: %s' %
-                        (server['driver'], server['name']),
-                        fg="red")
-            server.delete()
+            driver.delete_server(server['uid'])
+        db.servers.remove()
 
     def create(self):
         self._id = self.driver.create_server(

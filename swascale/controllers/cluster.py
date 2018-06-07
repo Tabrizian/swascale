@@ -47,7 +47,7 @@ def create():
                                ':' + cfg.prometheus['PROMETHEUS_PORT'])
     cluster = db.clusters.insert({'vms': request.json.get('vms')})
 
-    with open('config/targets.json', 'w+') as outfile:
+    with open('config/targets.json', 'r+') as outfile:
         try:
             prometheusTargets = json.load(outfile)
             prometheusTargets.append(

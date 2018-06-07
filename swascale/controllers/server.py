@@ -37,3 +37,9 @@ def create():
 def delete(uid):
     Server.delete(uid)
     return 'deleted'
+
+
+@server.route('/truncate', methods=['DELETE'])
+def truncate():
+    Server.truncate()
+    return 'truncate'

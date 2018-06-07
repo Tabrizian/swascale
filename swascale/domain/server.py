@@ -132,3 +132,10 @@ class Server:
             managerFromDB['join_tokens']['Manager'],
             '0.0.0.0:' + cfg.docker['SWARM_PORT']
         )
+
+    def swarm_leave(self):
+        swarm_client = docker.DockerClient(
+            'tcp://' + self.ips[self.networks[0]][0]['addr'] +
+            ':' + cfg.docker['API_PORT']
+        ).swarm
+        swarm_client.leave(True)

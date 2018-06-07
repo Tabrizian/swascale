@@ -66,3 +66,14 @@ def create():
 @cluster.route('/<cluster_id>', methods=['POST'])
 def update():
     return 'created'
+
+
+@cluster.route('/<cluster_id>', methods=['DELETE'])
+def delete(cluster_id):
+    cluster = db.clusters.find_one({'_id': ObjectId(cluster_id)})
+    for vm in cluster['vms']:
+        vm = Server(_id=vm['_id'])
+        vm.swarm_leave()
+
+    db.clusters.remove({'_id': ObjectId(cluster_id)})
+    return 'cluster removed'

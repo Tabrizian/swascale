@@ -75,5 +75,18 @@ def delete(cluster_id):
         vm = Server(_id=vm['_id'])
         vm.swarm_leave()
 
+    with open('config/targets.json', 'r+') as outfile:
+        prometheusTargets = json.load(outfile)
+        outfile.seek(0)
+        outfile.truncate()
+        outfile.seek(0)
+        for configuration in prometheusTargets:
+            print(configuration)
+            if configuration['labels']['cluster'] == cluster_id:
+                prometheusTargets.remove(configuration)
+                break
+
+        json.dump(prometheusTargets, outfile)
+
     db.clusters.remove({'_id': ObjectId(cluster_id)})
     return 'cluster removed'

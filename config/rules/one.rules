@@ -1,0 +1,10 @@
+groups:
+- name: example
+  rules:
+  - alert: HighErrorRate
+    expr: rate(node_network_receive_bytes[1m]) > 150
+    for: 1m
+    labels:
+      severity: page
+    annotations:
+      summary: High request latency

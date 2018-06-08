@@ -8,10 +8,15 @@ global:
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
       monitor: 'codelab-monitor'
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+        - alert:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-    - /tmp/rules/one.rules
+  - /etc/prometheus/rules/one.rules
   # - "second.rules"
 
 # A scrape configuration containing exactly one endpoint to scrape:

@@ -1,6 +1,7 @@
 import json
 
 from swascale.controllers import celery
+from swascale.domain.server import Server
 
 
 @celery.task
@@ -32,3 +33,17 @@ def add_cluster_id(targets, cluster):
             prometheusTargets.append(
                 {'targets': targets, 'labels': {'cluster': cluster}})
             json.dump(prometheusTargets, outfile)
+
+
+@celery.task
+def create_vm(vm_data):
+    server = Server(
+        name=vm_data['name'],
+        image=vm_data['image'],
+        networks=vm_data['networks'],
+        region=vm_data['region'],
+        driver=vm_data['driver'],
+        flavor=vm_data['flavor'],
+        key=vm_data['key']
+        )
+    server.create()

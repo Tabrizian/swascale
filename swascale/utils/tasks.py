@@ -25,10 +25,10 @@ def add_cluster_id(targets, cluster):
             prometheusTargets = json.load(outfile)
             outfile.seek(0)
             prometheusTargets.append(
-                {'targets': targets, 'labels': {'cluster': str(cluster)}})
+                {'targets': targets, 'labels': {'cluster': cluster}})
             json.dump(prometheusTargets, outfile)
         except ValueError:
             prometheusTargets = []
             prometheusTargets.append(
-                {'targets': targets, 'labels': {'cluster': str(cluster)}})
+                {'targets': targets, 'labels': {'cluster': cluster}})
             json.dump(prometheusTargets, outfile)

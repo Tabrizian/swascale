@@ -4,7 +4,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from swascale.domain import db
 from swascale.domain.server import Server
-from swascale.utils.tasks import delete_cluster_id, add_cluster_id
+from swascale.utils.tasks import delete_cluster_id, add_cluster_id, create_rule
 import json
 from config import cfg
 
@@ -54,14 +54,25 @@ def create():
 
 @cluster.route('/<cluster_id>', methods=['POST'])
 def update(cluster_id):
-    cluster = db.clusters.find_one({_id: ObjectId(cluster_id)})
+    cluster = db.clusters.find_one({'_id': ObjectId(cluster_id)})
+    rule = None
+    direction = None
     if 'up' in request.get_json():
-        cluster['up'] = request.json.get('up')
+        rule = request.json.get('up')
+        direction = 'up'
+        db.clusters.update_one({'_id': ObjectId(cluster_id)}, {
+            '$set': {'up': request.json.get('up')}
+            })
 
     if 'down' in request.get_json():
-        cluster['down'] = request.json.get('down')
+        rule = request.json.get('down')
+        direction = 'down'
+        db.clusters.update_one({'_id': ObjectId(cluster_id)}, {
+            '$set': {'down': request.json.get('down')}
+            })
 
-    cluster.save()
+    create_rule.delay(rule, str(cluster['_id']), direction)
+
     return 'updated'
 
 

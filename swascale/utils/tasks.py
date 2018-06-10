@@ -1,7 +1,10 @@
 import json
+import requests
 
 from swascale.controllers import celery
 from swascale.domain.server import Server
+
+from yaml import load, dump
 
 
 @celery.task
@@ -47,3 +50,42 @@ def create_vm(vm_data):
         key=vm_data['key']
         )
     server.create()
+
+@celery.task
+def create_rule(rule, cluster, direction):
+    data = {}
+    if direction == 'up':
+        data = {
+            'groups': [
+                {
+                    'name': 'Scale up',
+                    'rules': [
+                        {
+                            'alert': 'Scale up alert',
+                            'expr': rule,
+                            'for': '1m'
+                        }
+                    ]
+                }
+            ]
+        }
+    if direction == 'down':
+        data = {
+            'groups': [
+                {
+                    'name': 'Scale down',
+                    'rules': [
+                        {
+                            'alert': 'Scale down alert',
+                            'expr': rule,
+                            'for': '1m'
+                        }
+                    ]
+                }
+            ]
+        }
+
+    rule_file = open('config/rules/' + cluster + '_' + direction + '.yml', 'w')
+    dump(data, rule_file)
+    r = requests.post('http://localhost:443/-/reload')
+    rule_file.close()

@@ -14,6 +14,10 @@ flask = "*"
 pymongo = "*"
 docker = "*"
 celery = "*"
+redis = "*"
+flower = "*"
+eventlet = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.6"

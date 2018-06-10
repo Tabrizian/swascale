@@ -1,6 +1,7 @@
 from flask import Blueprint, request, Response
 import json
 from bson.json_util import dumps
+import swascale.utils.tasks
 from bson.objectid import ObjectId
 from swascale.domain import db
 from swascale.domain.server import Server
@@ -46,26 +47,22 @@ def create():
                 targets.append(worker.ips[worker.networks[0]][0]['addr'] +
                                ':' + cfg.prometheus['PROMETHEUS_PORT'])
     cluster = db.clusters.insert({'vms': request.json.get('vms')})
-
-    with open('config/targets.json', 'r+') as outfile:
-        try:
-            prometheusTargets = json.load(outfile)
-            outfile.seek(0)
-            prometheusTargets.append(
-                {'targets': targets, 'labels': {'cluster': str(cluster)}})
-            json.dump(prometheusTargets, outfile)
-        except ValueError:
-            prometheusTargets = []
-            prometheusTargets.append(
-                {'targets': targets, 'labels': {'cluster': str(cluster)}})
-            json.dump(prometheusTargets, outfile)
+    swascale.utils.tasks.add_cluster_id(targets, cluster)
 
     return 'created'
 
 
 @cluster.route('/<cluster_id>', methods=['POST'])
-def update():
-    return 'created'
+def update(cluster_id):
+    cluster = db.clusters.find_one({_id: ObjectId(cluster_id)})
+    if 'up' in request.get_json():
+        cluster['up'] = request.json.get('up')
+
+    if 'down' in request.get_json():
+        cluster['down'] = request.json.get('down')
+
+    cluster.save()
+    return 'updated'
 
 
 @cluster.route('/<cluster_id>', methods=['DELETE'])
@@ -75,18 +72,6 @@ def delete(cluster_id):
         vm = Server(_id=vm['_id'])
         vm.swarm_leave()
 
-    with open('config/targets.json', 'r+') as outfile:
-        prometheusTargets = json.load(outfile)
-        outfile.seek(0)
-        outfile.truncate()
-        outfile.seek(0)
-        for configuration in prometheusTargets:
-            print(configuration)
-            if configuration['labels']['cluster'] == cluster_id:
-                prometheusTargets.remove(configuration)
-                break
-
-        json.dump(prometheusTargets, outfile)
-
+    swascale.utils.tasks.delete_cluster_id(cluster_id)
     db.clusters.remove({'_id': ObjectId(cluster_id)})
     return 'cluster removed'

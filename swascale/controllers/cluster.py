@@ -4,7 +4,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from swascale.domain import db
 from swascale.domain.server import Server
-from swascale.utils.tasks import delete_cluster_id, add_cluster_id, create_rule
+from swascale.utils.tasks import delete_cluster_id, add_cluster_id, create_rule, delete_rule
 import json
 from config import cfg
 
@@ -84,5 +84,6 @@ def delete(cluster_id):
         vm.swarm_leave()
 
     delete_cluster_id.delay(cluster_id)
+    delete_rule.delay(cluster_id)
     db.clusters.remove({'_id': ObjectId(cluster_id)})
     return 'cluster removed'

@@ -1,10 +1,10 @@
 from flask import Blueprint, request, Response
 import json
 from bson.json_util import dumps
-import swascale.utils.tasks
 from bson.objectid import ObjectId
 from swascale.domain import db
 from swascale.domain.server import Server
+from swascale.utils.tasks import delete_cluster_id, add_cluster_id
 import json
 from config import cfg
 
@@ -47,7 +47,7 @@ def create():
                 targets.append(worker.ips[worker.networks[0]][0]['addr'] +
                                ':' + cfg.prometheus['PROMETHEUS_PORT'])
     cluster = db.clusters.insert({'vms': request.json.get('vms')})
-    swascale.utils.tasks.add_cluster_id(targets, cluster)
+    add_cluster_id.delay(targets, str(cluster))
 
     return 'created'
 
@@ -72,6 +72,6 @@ def delete(cluster_id):
         vm = Server(_id=vm['_id'])
         vm.swarm_leave()
 
-    swascale.utils.tasks.delete_cluster_id(cluster_id)
+    delete_cluster_id.delay(cluster_id)
     db.clusters.remove({'_id': ObjectId(cluster_id)})
     return 'cluster removed'

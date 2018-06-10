@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 
 from swascale.controllers import celery
@@ -89,3 +90,12 @@ def create_rule(rule, cluster, direction):
     dump(data, rule_file)
     r = requests.post('http://localhost:443/-/reload')
     rule_file.close()
+
+
+@celery.task
+def delete_rule(cluster):
+    if os.path.isfile('config/rules/' + cluster + '_up' + '.yml'):
+        os.remove('config/rules/' + cluster + '_up' + '.yml')
+    if os.path.isfile('config/rules/' + cluster + '_down' + '.yml'):
+        os.remove('config/rules/' + cluster + '_down' + '.yml')
+    r = requests.post('http://localhost:443/-/reload')

@@ -4,6 +4,7 @@ from bson.json_util import dumps
 from swascale.domain import db
 
 from swascale.domain.server import Server
+from swascale.utils.tasks import create_vm
 
 server = Blueprint('server', 'server')
 
@@ -20,16 +21,7 @@ def index():
 
 @server.route('', methods=['POST'])
 def create():
-    server = Server(
-        name=request.json['name'],
-        image=request.json['image'],
-        networks=request.json['networks'],
-        region=request.json['region'],
-        driver=request.json['driver'],
-        flavor=request.json['flavor'],
-        key=request.json['key']
-        )
-    server.create()
+    create_vm.delay(request.get_json())
     return 'created'
 
 

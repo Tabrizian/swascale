@@ -1,12 +1,8 @@
 from flask import Flask
-
-from swascale.controllers.server import server
-from swascale.controllers.cluster import cluster
-from swascale.controllers.alert import alert
-
 from config import cfg
-
 from celery import Celery
+
+import importlib
 
 
 def make_celery(app):
@@ -14,7 +10,7 @@ def make_celery(app):
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
         broker=app.config['CELERY_BROKER_URL'],
-        include=['utils/tasks.py']
+        include=['swascale.utils.tasks']
     )
     celery.conf.update(app.config)
 
@@ -32,7 +28,12 @@ app.config.update(
     CELERY_RESULT_BACKEND=cfg.celery['CELERY_RESULT_BACKEND']
 )
 
-celery = make_celery()
+celery = make_celery(app)
+
+from swascale.controllers.server import server
+from swascale.controllers.cluster import cluster
+from swascale.controllers.alert import alert
+
 
 app.register_blueprint(server, url_prefix='/server')
 app.register_blueprint(cluster, url_prefix='/cluster')

@@ -4,6 +4,9 @@ import requests
 
 from swascale.controllers import celery
 from swascale.domain.server import Server
+from swascale.domain import db
+from bson.objectid import ObjectId
+from config import cfg
 
 from yaml import load, dump
 
@@ -37,6 +40,28 @@ def add_cluster_id(targets, cluster):
             prometheusTargets.append(
                 {'targets': targets, 'labels': {'cluster': cluster}})
             json.dump(prometheusTargets, outfile)
+
+@celery.task
+def update_targets():
+    clusters = db.clusters.find({})
+    prometheusTargets = []
+    with open('config/targets.json', 'w') as outfile:
+        for cluster in clusters:
+            targets = []
+            for target in cluster['vms']:
+                vm = Server(_id=target['_id'])
+                targets.append(vm.ips[vm.networks[0]][0]['addr'] + ':' +
+                               cfg.prometheus['PROMETHEUS_PORT'])
+
+            prometheusTargets.append(
+                {'targets': targets, 'labels': {
+                    'cluster': str(cluster['_id'])
+                }}
+            )
+
+        json.dump(prometheusTargets, outfile)
+
+
 
 
 @celery.task
@@ -96,6 +121,40 @@ def create_rule(rule, cluster, direction):
 def delete_rule(cluster):
     if os.path.isfile('config/rules/' + cluster + '_up' + '.yml'):
         os.remove('config/rules/' + cluster + '_up' + '.yml')
+
     if os.path.isfile('config/rules/' + cluster + '_down' + '.yml'):
         os.remove('config/rules/' + cluster + '_down' + '.yml')
+
     r = requests.post('http://localhost:443/-/reload')
+
+@celery.task
+def add_to_cluster(cluster):
+    cluster = db.clusters.find_one({'_id': ObjectId(cluster)})
+    manager = None
+    for vm in cluster['vms']:
+        if vm['role'] == 'manager':
+            manager = vm
+
+    server = Server(
+        name='scaled_vm',
+        image='Ubuntu-16-04',
+        networks=['ece1548-net'],
+        region='CORE',
+        driver='openstack',
+        flavor='m1.small',
+        key='swascale_key'
+        )
+    server.create()
+    manager = Server(_id=manager['_id'])
+    server.swarm_join_worker(manager)
+    cluster['vms'].append({
+        '_id': str(server.uid),
+        'role': 'worker'
+    })
+    cluster = db.clusters.update_one({'_id': cluster['_id']}, {
+        '$set': {
+            'vms': cluster['vms']
+        }
+    })
+
+    update_targets()

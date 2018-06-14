@@ -26,6 +26,16 @@ module.exports = {
   /*
   ** Build configuration
   */
+  modules: [
+    '@nuxtjs/axios'
+  ],
+  axios: {
+    proxy: true
+  },
+  proxy: {
+    '/api': process.env.PROXY_API_URL || 'http://localhost:3000/'
+  },
+
   build: {
     vendor: [
       '~/plugins/vuetify.js'

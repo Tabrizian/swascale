@@ -34,11 +34,9 @@
 export default {
   computed: {
     numberOfServers: function () {
-      console.log(this.servers)
       return this.servers.length
     },
     numberOfClusters: function () {
-      console.log(this.clusters)
       return this.clusters.length
     }
   },

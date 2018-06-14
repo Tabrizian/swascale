@@ -35,6 +35,6 @@ from swascale.controllers.cluster import cluster
 from swascale.controllers.alert import alert
 
 
-app.register_blueprint(server, url_prefix='/server')
-app.register_blueprint(cluster, url_prefix='/cluster')
+app.register_blueprint(server, url_prefix='/api/server')
+app.register_blueprint(cluster, url_prefix='/api/cluster')
 app.register_blueprint(alert, url_prefix='/alert')

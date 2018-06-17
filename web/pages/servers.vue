@@ -49,7 +49,7 @@
             <td>{{ props.item.region }}</td>
             <td>{{ props.item.driver }}</td>
             <v-btn icon class="mx-0" @click="deleteItem(props.item)">
-              <v-icon color="white">delete</v-icon>
+              <v-icon color="red">delete</v-icon>
             </v-btn>
           </template>
     </v-data-table>
@@ -90,7 +90,12 @@ export default {
         {
           text: 'Driver',
           value: 'driver'
+        },
+        {
+          text: 'Actions',
+          value: 'action'
         }
+
       ],
       editedItem: {
         name: '',
@@ -111,39 +116,31 @@ export default {
   methods: {
     deleteItem: async function (item) {
       let objId = item._id.$oid
-      //  console.log(objId)
       if (confirm('Are You Sure To Want To Delete ' + item.name + ' ?')) {
-        console.log('yes')
-        let deletedServer = await this.$axios.delete('/api/server/' + objId).then((res) => {
-          console.log('deleted')
-        })
-          .catch((e) => {
-            //
-          })
+        let deletedServer = await this.$axios.delete('/api/server/' + objId)
         return deletedServer
       }
     },
-    save () {
+    async save () {
       if (this.editedIndex > -1) {
         // TODO EDIT ITEM
       } else {
-        let networks = this.editedItem.networks.split(' ')
-        this.$axios.post('/api/server', {
-          'name': this.editedItem.name,
-          'image': this.editedItem.image,
-          'flavor': this.editedItem.flavor,
-          'networks': networks,
-          'region': this.editedItem.region,
-          'driver': this.editedItem.driver,
-          'key': this.editedItem.key
-        }).then((res) => {
-          console.log('created')
-        })
-          .catch((e) => {
-            console.log('can\'t create')
+        try {
+          let networks = this.editedItem.networks.split(' ')
+          await this.$axios.post('/api/server', {
+            'name': this.editedItem.name,
+            'image': this.editedItem.image,
+            'flavor': this.editedItem.flavor,
+            'networks': networks,
+            'region': this.editedItem.region,
+            'driver': this.editedItem.driver,
+            'key': this.editedItem.key
           })
+        } catch (e) {
+
+        }
+        this.close()
       }
-      this.close()
     },
     close () {
       this.dialog = false

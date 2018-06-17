@@ -13,19 +13,19 @@
                 <v-text-field v-model="editedItem.name" label="server name"></v-text-field>
               </v-flex>
               <v-flex xs12 sm12 md12>
-                <v-text-field v-model="editedItem.driver" label="server driver"></v-text-field>
+                <v-text-field v-model="editedItem.image" label="server image"></v-text-field>
               </v-flex>
               <v-flex xs12 sm12 md12>
                 <v-text-field v-model="editedItem.flavor" label="server flavor"></v-text-field>
               </v-flex>
               <v-flex xs12 sm12 md12>
-                <v-text-field v-model="editedItem.image" label="server image"></v-text-field>
-              </v-flex>
-              <v-flex xs12 sm12 md12>
-                <v-text-field v-model="editedItem.key" label="server key"></v-text-field>
-              </v-flex>
-              <v-flex xs12 sm12 md12>
                 <v-text-field v-model="editedItem.networks" label="server networks"></v-text-field>
+              </v-flex>
+              <v-flex xs12 sm12 md12>
+                <v-text-field v-model="editedItem.region" label="server region"></v-text-field>
+              </v-flex>
+              <v-flex xs12 sm12 md12>
+                <v-text-field v-model="editedItem.driver" label="server driver"></v-text-field>
               </v-flex>
               <v-flex xs12 sm12 md12>
                 <v-text-field v-model="editedItem.key" label="server key"></v-text-field>
@@ -109,31 +109,33 @@ export default {
     }
   },
   methods: {
-    deleteItem (item) {
+    deleteItem: async function (item) {
       let objId = item._id.$oid
       //  console.log(objId)
       if (confirm('Are You Sure To Want To Delete ' + item.name + ' ?')) {
         console.log('yes')
-        this.$axios.delete('/api/server/' + objId).then((res) => {
+        let deletedServer = await this.$axios.delete('/api/server/' + objId).then((res) => {
           console.log('deleted')
         })
           .catch((e) => {
             //
           })
+        return deletedServer
       }
     },
     save () {
       if (this.editedIndex > -1) {
         // TODO EDIT ITEM
       } else {
+        let networks = this.editedItem.networks.split(' ')
         this.$axios.post('/api/server', {
           'name': this.editedItem.name,
-          'image': 'Ubuntu-16-04',
-          'flavor': 'm1.small',
-          'networks': ['ece1548-net'],
-          'region': 'CORE',
-          'driver': 'openstack',
-          'key': 'swascale_key'
+          'image': this.editedItem.image,
+          'flavor': this.editedItem.flavor,
+          'networks': networks,
+          'region': this.editedItem.region,
+          'driver': this.editedItem.driver,
+          'key': this.editedItem.key
         }).then((res) => {
           console.log('created')
         })

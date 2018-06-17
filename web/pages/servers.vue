@@ -7,6 +7,9 @@
           <td>{{ props.item.flavor }}</td>
           <td>{{ props.item.region }}</td>
           <td>{{ props.item.driver }}</td>
+          <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+            <v-icon color="white">delete</v-icon>
+          </v-btn>
         </template>
   </v-data-table>
 </template>
@@ -45,6 +48,21 @@ export default {
           value: 'driver'
         }
       ]
+    }
+  },
+  methods: {
+    deleteItem (item) {
+      let objId = item._id.$oid
+      //  console.log(objId)
+      if (confirm('Are You Sure To Want To Delete ' + item.name + ' ?')) {
+        console.log('yes')
+        this.$axios.delete('/api/server/' + objId).then((res) => {
+          console.log('deleted')
+        })
+          .catch((e) => {
+            //
+          })
+      }
     }
   }
 }

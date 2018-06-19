@@ -127,6 +127,7 @@ def delete_rule(cluster):
 
     r = requests.post('http://localhost:443/-/reload')
 
+
 @celery.task
 def add_to_cluster(cluster):
     cluster = db.clusters.find_one({'_id': ObjectId(cluster)})
@@ -158,3 +159,27 @@ def add_to_cluster(cluster):
     })
 
     update_targets()
+
+
+@celery.task
+def remove_from_cluster(cluster):
+    cluster = db.clusters.find_one({'_id': ObjectId(cluster)})
+    worker = None
+    for vm in cluster['vms']:
+        if vm['role'] == 'worker':
+            worker = vm
+            break
+
+    if worker is None:
+        cluster['vms'].remove(worker)
+        worker = Server(_id=worker['_id'])
+        worker.swarm_leave()
+        Server.delete(worker.uid)
+
+        cluster = db.clusters.update_one({'_id': cluster['_id']}, {
+            '$set': {
+                'vms': cluster['vms']
+            }
+        })
+
+        update_targets()

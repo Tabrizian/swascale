@@ -21,6 +21,17 @@ def index():
     return response
 
 
+@cluster.route('/<cluster_id>', methods=['GET'])
+def show(cluster_id):
+    cluster = db.clusters.find_one({'_id': ObjectId(cluster_id)})
+    response = Response(
+        dumps(cluster),
+        status=200,
+        mimetype='application/json'
+        )
+    return response
+
+
 @cluster.route('', methods=['POST'])
 def create():
     targets = []

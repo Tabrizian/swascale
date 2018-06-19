@@ -47,6 +47,20 @@ def create():
                 targets.append(worker.ips[worker.networks[0]][0]['addr'] +
                                ':' + cfg.prometheus['PROMETHEUS_PORT'])
     cluster = db.clusters.insert({'vms': request.json.get('vms')})
+    if 'up' in request.get_json():
+        rule = request.json.get('up')
+        direction = 'up'
+        db.clusters.update_one({'_id': cluster}, {
+            '$set': {'up': request.json.get('up')}
+            })
+
+    if 'down' in request.get_json():
+        rule = request.json.get('down')
+        direction = 'down'
+        db.clusters.update_one({'_id': cluster}, {
+            '$set': {'down': request.json.get('down')}
+            })
+
     add_cluster_id.delay(targets, str(cluster))
 
     return 'created'

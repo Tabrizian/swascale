@@ -170,7 +170,7 @@ def remove_from_cluster(cluster):
             worker = vm
             break
 
-    if worker is None:
+    if worker is not None:
         cluster['vms'].remove(worker)
         worker = Server(_id=worker['_id'])
         worker.swarm_leave()

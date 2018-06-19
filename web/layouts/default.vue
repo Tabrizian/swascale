@@ -24,7 +24,7 @@
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-toolbar-title>
         <span class="white--text">swascale</span>
-        <!-- <img src="/logo.png" height="30px"> -->
+        <!-- <img src="/logo.jpg" height="30px"> -->
       </v-toolbar-title>
       <v-spacer></v-spacer>
     </v-toolbar>

@@ -1,6 +1,21 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" max-width="500px">
+    <v-data-table :headers="headers" :items="servers" hide-actions class="elevation-1">
+      <template slot="items" slot-scope="props">
+        <td>{{ props.item.name }}</td>
+        <td>{{ props.item.uid }}</td>
+        <td>{{ props.item.image }}</td>
+        <td>{{ props.item.flavor }}</td>
+        <td>{{ props.item.region }}</td>
+        <td>{{ props.item.driver }}</td>
+        <td>
+          <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+            <v-icon color="red">delete</v-icon>
+          </v-btn>
+        </td>
+      </template>
+    </v-data-table>
+      <v-dialog v-model="dialog" max-width="500px">
       <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn>
       <v-card>
         <v-card-title>
@@ -40,21 +55,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-data-table :headers="headers" :items="servers" hide-actions class="elevation-1">
-          <template slot="items" slot-scope="props">
-            <td>{{ props.item.name }}</td>
-            <td>{{ props.item.uid }}</td>
-            <td>{{ props.item.image }}</td>
-            <td>{{ props.item.flavor }}</td>
-            <td>{{ props.item.region }}</td>
-            <td>{{ props.item.driver }}</td>
-            <v-btn icon class="mx-0" @click="deleteItem(props.item)">
-              <v-icon color="red">delete</v-icon>
-            </v-btn>
-          </template>
-    </v-data-table>
-  </div>
-</template>
+    </div>
+    </template>
+
 
 <script>
 export default {
@@ -95,7 +98,6 @@ export default {
           text: 'Actions',
           value: 'action'
         }
-
       ],
       editedItem: {
         name: '',
@@ -128,17 +130,15 @@ export default {
         try {
           let networks = this.editedItem.networks.split(' ')
           await this.$axios.post('/api/server', {
-            'name': this.editedItem.name,
-            'image': this.editedItem.image,
-            'flavor': this.editedItem.flavor,
-            'networks': networks,
-            'region': this.editedItem.region,
-            'driver': this.editedItem.driver,
-            'key': this.editedItem.key
+            name: this.editedItem.name,
+            image: this.editedItem.image,
+            flavor: this.editedItem.flavor,
+            networks: networks,
+            region: this.editedItem.region,
+            driver: this.editedItem.driver,
+            key: this.editedItem.key
           })
-        } catch (e) {
-
-        }
+        } catch (e) {}
         this.close()
       }
     },

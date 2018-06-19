@@ -9,9 +9,13 @@
           <v-btn icon class="mx-0" @click="deleteItem(props.item)">
             <v-icon color="red">delete</v-icon>
           </v-btn>
+          <v-btn icon class="mx-0" :to="'/clusters/' + props.item._id.$oid + '/edit'">
+            <v-icon color="yellow">edit</v-icon>
+          </v-btn>
         </td>
       </template>
     </v-data-table>
+    <v-btn color="primary" to="/clusters/create">New Cluster</v-btn>
 </div>
 
 </template>
